@@ -1,0 +1,108 @@
+#!/usr/bin/env node
+
+const fs = require("fs");
+const path = require("path");
+const { execSync } = require("child_process");
+
+/**
+ * .rbox 声明了要被批量处理的目录:
+ * ["vega", "iMovie", "LVOpenPlugin", "VideoFusion-win", "videoeditor"]
+ */
+const RBOX_FILE = ".rbox";
+
+/**
+ * 从当前文件夹向上查找 .rbox 文件
+ */
+const findRBoxFile = (file) => {
+  let currentDir = process.cwd();
+  while (currentDir !== "/") {
+    const dotFilePath = path.join(currentDir, file);
+    if (fs.existsSync(dotFilePath)) {
+      return dotFilePath;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+  return undefined;
+};
+
+/**
+ * 执行命令
+ * @param {string} cmd 要执行的命令
+ * @param {string} gitPath Git 仓库路径
+ */
+const runCommand = (cmd, gitPath) => {
+  console.log("-".repeat(80));
+  console.warn(`rbox: ${gitPath}\ncmd: ${cmd}`);
+  console.log("-".repeat(80));
+  if (!fs.existsSync(gitPath)) {
+    console.error(`${gitPath} 目录不存在`);
+    return;
+  }
+  try {
+    execSync(cmd, { cwd: gitPath, stdio: "inherit" });
+  } catch (error) {
+    console.error("rbox 错误:", error);
+  }
+};
+
+const chalkLog = async () => {
+  const chalk = await (await import("chalk")).default;
+
+  const originLog = console.log;
+  const originWarn = console.warn;
+  const originError = console.error;
+
+  // 重写 console.log 方法
+  console.log = function (...args) {
+    originLog(chalk.cyan(...args));
+  };
+
+  // 重写 console.warn 方法
+  console.warn = function (...args) {
+    originWarn(chalk.yellow(...args));
+  };
+
+  // 重写 console.error 方法
+  console.error = function (...args) {
+    originError(chalk.red(...args));
+  };
+};
+
+Promise.resolve().then(async () => {
+  await chalkLog();
+  try {
+    const args = process.argv.slice(2);
+
+    const rboxFile = findRBoxFile(RBOX_FILE);
+    console.log(`.rbox: ${rboxFile}`);
+    if (!rboxFile) {
+      throw new Error(".rbox 文件未找到!");
+    }
+
+    const fileContent = JSON.parse(fs.readFileSync(rboxFile, "utf-8"));
+    console.log("content:");
+    console.log(JSON.stringify(fileContent, null, 2));
+    const gitArray = fileContent.enable;
+
+    const gitPathArray = gitArray.map((e) =>
+      path.join(path.dirname(rboxFile), e)
+    );
+    gitPathArray.forEach((element) => {
+      console.log(`目标仓库: ${element}`);
+    });
+
+    if (args.length === 0) {
+      throw "请输入要批量执行的命令. 例如 rbox pwd";
+    }
+    const cmd = args.join(" ");
+
+    // 在每个 Git 仓库中执行命令
+    gitPathArray.forEach((gitPath) => {
+      runCommand(cmd, gitPath);
+    });
+    console.info("SUCCESS 🎉");
+  } catch (e) {
+    console.error(e);
+    console.error("ABORT 💥");
+  }
+});

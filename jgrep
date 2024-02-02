@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ $# -lt 1 ]; then
+    echo -e "Usage: jgrep [keyword] to search keyword in current git repo's Java & Kotlin files"
+else
+    git --no-pager grep --recurse-submodules -ni "$1" -- '*.java' '*.kt'
+    #git submodule foreach "git grep -ni \"$1\"  -- '*.java'; true"
+fi

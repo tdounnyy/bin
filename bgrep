@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ $# -lt 1 ]; then
+    echo -e "Usage: rgrep [keyword] to search keyword in current git repo's build.gradle file"
+else
+    git grep -ni "$1" -- '*.gradle' 'gradle.properties' 'local.properties'
+fi
