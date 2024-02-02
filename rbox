@@ -6,7 +6,17 @@ const { execSync } = require("child_process");
 
 /**
  * .rbox 声明了要被批量处理的目录:
- * ["vega", "iMovie", "LVOpenPlugin", "VideoFusion-win", "videoeditor"]
+ * {
+ *   "enable": [
+ *     "vega",
+ *     "LVOpenPlugin",
+ *     "videoeditor"
+ *   ],
+ *   "disable": [
+ *     "iMovie",
+ *     "VideoFusion-win"
+ *   ]
+ * }
  */
 const RBOX_FILE = ".rbox";
 
@@ -92,7 +102,8 @@ Promise.resolve().then(async () => {
     });
 
     if (args.length === 0) {
-      throw "请输入要批量执行的命令. 例如 rbox pwd";
+      console.log("请输入要批量执行的命令. 例如 rbox pwd");
+      return;
     }
     const cmd = args.join(" ");
 
