@@ -21,6 +21,30 @@ const { execSync } = require("child_process");
 const RBOX_FILE = ".rbox";
 
 /**
+ * > rbox --init
+ * 初始化 .rbox file
+ */
+const init = async () => {
+  // 将一段文本写入指定文件中
+  const text = `{
+  "enable": [
+    "videoeditor",
+    "vega"
+  ],
+  "disable": [
+    "iMovie",
+    "VideoFusion-win"
+  ]
+}
+`;
+  console.log("init .rbox:");
+  console.log(text);
+  const fileRelativePath = ".rbox";
+  const filePath = path.resolve(fileRelativePath);
+  fs.writeFileSync(filePath, text);
+};
+
+/**
  * 从当前文件夹向上查找 .rbox 文件
  */
 const findRBoxFile = (file) => {
@@ -83,6 +107,10 @@ Promise.resolve().then(async () => {
   try {
     const args = process.argv.slice(2);
 
+    if (args == "--init") {
+      await init(".rbox");
+      return;
+    }
     const rboxFile = findRBoxFile(RBOX_FILE);
     console.log(`.rbox: ${rboxFile}`);
     if (!rboxFile) {
