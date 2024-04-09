@@ -114,7 +114,7 @@ Promise.resolve().then(async () => {
     const rboxFile = findRBoxFile(RBOX_FILE);
     console.log(`.rbox: ${rboxFile}`);
     if (!rboxFile) {
-      throw new Error(".rbox 文件未找到!");
+      throw new Error(".rbox 文件未找到!\n在适当的目录执行: rbox --init ");
     }
 
     const fileContent = JSON.parse(fs.readFileSync(rboxFile, "utf-8"));
